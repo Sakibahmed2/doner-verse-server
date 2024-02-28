@@ -42,6 +42,7 @@ async function run() {
     const db = client.db("charity-compass");
     const collection = db.collection("users");
     const supplyCollection = db.collection("supplies");
+    const testimonialsCollection = db.collection("testimonials");
 
     // User Registration
     app.post("/api/v1/register", async (req, res) => {
@@ -120,6 +121,7 @@ async function run() {
       res.status(201).json({
         success: true,
         message: "Supply created successfully",
+        data: result,
       });
     });
 
@@ -160,6 +162,31 @@ async function run() {
       res.status(200).json({
         success: true,
         message: "Supply delete successfully",
+        data: result,
+      });
+    });
+
+    //create testimonials
+    app.post("/api/v1/testimonials", async (req, res) => {
+      const { name, title, description } = req.body;
+
+      await testimonialsCollection.insertOne({
+        name,
+        title,
+        description,
+      });
+      res.status(201).json({
+        success: true,
+        message: "Testimonials created successfully",
+      });
+    });
+
+    //get testimonials
+    app.get("/api/v1/testimonials", async (re1, res) => {
+      const result = await testimonialsCollection.find().toArray();
+      res.status(201).json({
+        success: true,
+        message: "Testimonials retrieved successfully",
         data: result,
       });
     });
