@@ -44,6 +44,7 @@ async function run() {
     const supplyCollection = db.collection("supplies");
     const testimonialsCollection = db.collection("testimonials");
     const volunteersCollection = db.collection("volunteers");
+    const commentsCollection = db.collection("Comments");
 
     // User Registration
     app.post("/api/v1/register", async (req, res) => {
@@ -210,6 +211,28 @@ async function run() {
       res.status(201).json({
         success: true,
         message: "Volunteers retrieved successfully",
+        data: result,
+      });
+    });
+
+    //create volunteer
+    app.post("/api/v1/comments", async (req, res) => {
+      // { name, image, birthDate, contactNo, email, address }
+      const commentData = req.body;
+      await commentsCollection.insertOne(commentData);
+
+      res.status(201).json({
+        success: true,
+        message: "Comment created successfully",
+      });
+    });
+
+    // get all volunteer
+    app.get("/api/v1/comments", async (re1, res) => {
+      const result = await commentsCollection.find().toArray();
+      res.status(201).json({
+        success: true,
+        message: "Comments retrieved successfully",
         data: result,
       });
     });
