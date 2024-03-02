@@ -44,7 +44,8 @@ async function run() {
     const supplyCollection = db.collection("supplies");
     const testimonialsCollection = db.collection("testimonials");
     const volunteersCollection = db.collection("volunteers");
-    const commentsCollection = db.collection("Comments");
+    const commentsCollection = db.collection("comments");
+    const donationCollection = db.collection("donation");
 
     // User Registration
     app.post("/api/v1/register", async (req, res) => {
@@ -215,7 +216,7 @@ async function run() {
       });
     });
 
-    //create volunteer
+    //create comments
     app.post("/api/v1/comments", async (req, res) => {
       // { name, image, birthDate, contactNo, email, address }
       const commentData = req.body;
@@ -227,12 +228,54 @@ async function run() {
       });
     });
 
-    // get all volunteer
+    // get all comment
     app.get("/api/v1/comments", async (re1, res) => {
       const result = await commentsCollection.find().toArray();
       res.status(201).json({
         success: true,
         message: "Comments retrieved successfully",
+        data: result,
+      });
+    });
+
+    //create donations
+    app.post("/api/v1/donations", async (req, res) => {
+      const { email, amount } = req.body;
+
+      try {
+        // Check if the donor already exists in the database
+        const existingDonor = await donationCollection.findOne({ email });
+
+        if (existingDonor) {
+          // If the donor exists, update their donation amount
+          await donationCollection.updateOne(
+            { email },
+            { $inc: { amount: amount } }
+          );
+        } else {
+          // If the donor does not exist, create a new donation
+          await donationCollection.insertOne({ email, amount });
+        }
+
+        res.status(201).json({
+          success: true,
+          message: "Donation created successfully",
+        });
+      } catch (error) {
+        console.error("Error creating donation:", error);
+        res.status(500).json({
+          success: false,
+          message: "Internal server error",
+        });
+      }
+    });
+
+    // get all donations
+    app.get("/api/v1/donations", async (re1, res) => {
+      const result = await donationCollection.find().toArray();
+      res.status(201).json({
+        success: true,
+        message: "Donation retrieved successfully",
         data: result,
       });
     });
