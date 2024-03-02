@@ -243,18 +243,27 @@ async function run() {
       const { email, amount } = req.body;
 
       try {
-        // Check if the donor already exists in the database
+        const donorData = await collection.findOne({ email });
+
+        if (!donorData) {
+          return res.status(404).json({
+            success: false,
+            message: "User not found",
+          });
+        }
+
+        const { name } = donorData;
+        console.log(name);
+
         const existingDonor = await donationCollection.findOne({ email });
 
         if (existingDonor) {
-          // If the donor exists, update their donation amount
           await donationCollection.updateOne(
             { email },
             { $inc: { amount: amount } }
           );
         } else {
-          // If the donor does not exist, create a new donation
-          await donationCollection.insertOne({ email, amount });
+          await donationCollection.insertOne({ name, email, amount });
         }
 
         res.status(201).json({
@@ -265,14 +274,18 @@ async function run() {
         console.error("Error creating donation:", error);
         res.status(500).json({
           success: false,
-          message: "Internal server error",
+          message: "Server side error",
         });
       }
     });
 
     // get all donations
     app.get("/api/v1/donations", async (re1, res) => {
-      const result = await donationCollection.find().toArray();
+      const result = await donationCollection
+        .find()
+        .sort({ amount: -1 })
+        .toArray();
+
       res.status(201).json({
         success: true,
         message: "Donation retrieved successfully",
